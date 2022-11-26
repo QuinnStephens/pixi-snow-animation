@@ -7,32 +7,19 @@ let renderer;
 let stageWidth = 2400;
 let stageHeight = 2400;
 
-let farClouds, nearClouds, background;
-let panSpeed = 1;
-
 let numParticles = 500;
-let minScale = 0.25;
-let maxScale = 1;
-let minWind = 0;
-let maxWind = -4;
-let minGravity = 1;
-let maxGravity = 2;
+let minScale = 0.5;
+let maxScale = 2;
+let minWind = 5;
+let maxWind = 10;
+let minGravity = 5;
+let maxGravity = 10;
 
 let snowflakes = [];
 
 let elapsedTime = 0;
 let lastFrameTime = 0;
 let deltaTime = 0;
-
-let inputContainer;
-let inputField;
-let inputTypes;
-let inputValues;
-let currentInput;
-let currentStory;
-let previousStories = [];
-
-let audioContext;
 
 // ! Classes
 
@@ -85,8 +72,10 @@ function addParticles() {
     sprite.rotation = Math.random() * 2 * Math.PI;
     sprite.anchor = new PIXI.Point(0.5, 0.5);
 
+    const speed = new PIXI.Point(Math.random() * (maxWind - minWind) + minWind, Math.random() * (maxGravity - minGravity) + minGravity)
+
     let flake = new snowflake(sprite,
-      new PIXI.Point(Math.random() * (maxWind - minWind) + minWind, Math.random() * (maxGravity - minGravity) + minGravity),
+      speed,
       (Math.random() * 0.1) - 0.10,
       Math.random() * Math.PI,
       Math.random() * 1000 + 1000);

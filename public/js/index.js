@@ -21,6 +21,8 @@ let elapsedTime = 0;
 let lastFrameTime = 0;
 let deltaTime = 0;
 
+let snapshotCount = 0;
+
 // ! Classes
 
 function snowflake(sprite, speed, rotation, sineSeed, cycleTime) {
@@ -44,6 +46,19 @@ function setupPixi() {
   app.ticker.add((deltaTime) => {
     elapsedTime += deltaTime;
     stepParticles();
+    // Uncomment this to export frames
+    // const totalFrameCount = 64
+    // if (snapshotCount < totalFrameCount) {
+    //   app.renderer.extract.image(stage).then((data) => {
+    //     var a = document.createElement("a");
+    //     document.body.append(a);
+    //     a.download = `${snapshotCount}`;
+    //     a.href = data.src;
+    //     a.click();
+    //     a.remove();
+    //     snapshotCount += 1
+    //   })
+    // }
   })
 }
 

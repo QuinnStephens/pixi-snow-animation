@@ -2,6 +2,7 @@
 
 // ! Definitions
 
+let app;
 let stage;
 let renderer;
 let stageWidth = 2400;
@@ -10,10 +11,10 @@ let stageHeight = 2400;
 let numParticles = 500;
 let minScale = 0.5;
 let maxScale = 2;
-let minWind = 5;
-let maxWind = 10;
-let minGravity = 5;
-let maxGravity = 10;
+let minWind = 0.7;
+let maxWind = 0.9;
+let minGravity = 0.7;
+let maxGravity = 1;
 
 let snowflakes = [];
 
@@ -22,6 +23,10 @@ let lastFrameTime = 0;
 let deltaTime = 0;
 
 let snapshotCount = 0;
+
+const saveOutputToImages = false;
+const frameRate = 24;
+const duration = 8; //seconds
 
 // ! Classes
 
@@ -37,29 +42,49 @@ function snowflake(sprite, speed, rotation, sineSeed, cycleTime) {
 setupPixi();
 
 function setupPixi() {
-  let app = new PIXI.Application({ width: stageWidth, height: stageHeight });
+  app = new PIXI.Application({ width: stageWidth, height: stageHeight });
   document.body.appendChild(app.view);
   stage = app.stage;
+  const graphics = new PIXI.Graphics();
+  graphics.beginFill(0x000000);
+  graphics.drawRect(0, 0, stageWidth, stageHeight);
+  stage.addChild(graphics);
 
   addParticles();
 
-  app.ticker.add((deltaTime) => {
+  lastFrameTime = new Date().getTime();
+  app.ticker.add(() => {
+    const now = new Date().getTime();
+    const deltaTime = now - lastFrameTime;
+    lastFrameTime = now;
     elapsedTime += deltaTime;
-    stepParticles();
-    // Uncomment this to export frames
-    // const totalFrameCount = 64
-    // if (snapshotCount < totalFrameCount) {
-    //   app.renderer.extract.image(stage).then((data) => {
-    //     var a = document.createElement("a");
-    //     document.body.append(a);
-    //     a.download = `${snapshotCount}`;
-    //     a.href = data.src;
-    //     a.click();
-    //     a.remove();
-    //     snapshotCount += 1
-    //   })
-    // }
+    console.log(now)
+    if (!saveOutputToImages) {
+      stepParticles(deltaTime);
+    }
   })
+
+  if (saveOutputToImages) {
+    saveFrameAsImage();
+  }
+}
+
+function saveFrameAsImage() {
+  const totalFrameCount = duration * frameRate;
+  const deltaTime = 1000.0 / frameRate;
+  if (snapshotCount < totalFrameCount) {
+    stepParticles(deltaTime);
+    const canvas = app.renderer.extract.canvas(app.stage, new PIXI.Rectangle(0, 0, stageWidth, stageHeight))
+    var a = document.createElement("a");
+    document.body.append(a);
+    a.download = `${snapshotCount}`;
+    a.href = canvas.toDataURL("image/jpeg");
+    a.click();
+    a.remove();
+    snapshotCount += 1
+    saveFrameAsImage();
+    elapsedTime += deltaTime;
+  }
 }
 
 function addParticles() {
@@ -100,14 +125,14 @@ function addParticles() {
   }
 }
 
-function stepParticles() {
+function stepParticles(deltaTime) {
   for (let i in snowflakes) {
     let child = snowflakes[i];
     let sprite = child.sprite;
 
-    sprite.position.x += child.speed.x + Math.sin(child.sineSeed + elapsedTime / child.cycleTime);
-    sprite.position.y += child.speed.y;
-    sprite.rotation += child.rotation;
+    sprite.position.x += child.speed.x * deltaTime + Math.sin(child.sineSeed + elapsedTime / child.cycleTime);
+    sprite.position.y += child.speed.y * deltaTime;
+    sprite.rotation += child.rotation * deltaTime / 1000;
 
     if (sprite.position.y > stageHeight || (sprite.position.x < 0 && minWind < 0) || (sprite.position.x > stageWidth && minWind > 0)) {
       let top = Math.random() > 0.5;
